@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'Turnero.apps.TurneroConfig',
 ]
 
 MIDDLEWARE = [
@@ -80,7 +81,7 @@ DATABASES = {
         'USER': 'postgres',
         'PASSWORD': 'aleins99',
         'HOST': 'localhost',
-        'PORT':''
+        'PORT': ''
     }
 }
 

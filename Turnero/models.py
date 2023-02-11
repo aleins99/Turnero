@@ -8,14 +8,86 @@
 from django.db import models
 
 
+class Distrito(models.Model):
+    id = models.SmallAutoField(primary_key=True)
+    departamento = models.ForeignKey(
+        'Departamento', on_delete=models.CASCADE)
+    codigo = models.SmallIntegerField(unique=True)
+    descripcion = models.CharField(max_length=32)
+    activo = models.BooleanField()
+    fecha_insercion = models.DateTimeField()
+    usuario_insercion = models.CharField(max_length=16)
+    fecha_modificacion = models.DateTimeField(blank=True, null=True)
+    usuario_modificacion = models.CharField(
+        max_length=16, blank=True, null=True)
+
+    class Meta:
+        db_table = 'distrito'
+
+
+class Persona(models.Model):
+    id = models.SmallAutoField(primary_key=True)
+    tipo_persona = models.ForeignKey(
+        'TipoPersona', on_delete=models.CASCADE)
+    tipo_documento = models.ForeignKey(
+        'TipoDocumento', on_delete=models.CASCADE)
+    numero_documento = models.CharField(unique=True, max_length=16)
+    nombre = models.CharField(max_length=64)
+    apellido = models.CharField(max_length=64)
+    fecha_nacimiento = models.DateField()
+    lugar_nacimiento_distrito = models.ForeignKey(
+        Distrito, on_delete=models.CASCADE)
+    sexo = models.ForeignKey('Sexo', on_delete=models.CASCADE)
+    nacionalidad = models.ForeignKey(
+        'Nacionalidad', on_delete=models.CASCADE)
+    direccion = models.CharField(max_length=70, blank=True, null=True)
+    telefono = models.CharField(max_length=20, blank=True, null=True)
+    email = models.CharField(max_length=50, blank=True, null=True)
+    activo = models.BooleanField()
+    fecha_insercion = models.DateTimeField()
+    usuario_insercion = models.CharField(max_length=16)
+    fecha_modificacion = models.DateTimeField(blank=True, null=True)
+    usuario_modificacion = models.CharField(
+        max_length=16, blank=True, null=True)
+
+    class Meta:
+        db_table = 'persona'
+
+
+class Rol(models.Model):
+    id = models.SmallAutoField(primary_key=True)
+    codigo = models.CharField(max_length=8)
+    descripcion = models.CharField(max_length=32)
+    activo = models.BooleanField()
+
+    class Meta:
+        db_table = 'rol'
+
+
+class Usuario(models.Model):
+    id = models.OneToOneField(
+        Persona, on_delete=models.CASCADE, db_column='id', primary_key=True)
+    nombre = models.CharField(unique=True, max_length=16)
+    clave = models.CharField(max_length=32)
+    activo = models.BooleanField()
+    persona_id = models.IntegerField()
+    rol = models.ForeignKey(Rol, on_delete=models.CASCADE)
+    fecha_insercion = models.DateTimeField()
+    fecha_modificacion = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        db_table = 'usuario'
+
+
 class AperturaCaja(models.Model):
     id = models.IntegerField(primary_key=True)
-    usuario_uso = models.ForeignKey('Usuario', models.DO_NOTHING, on_delete=models.CASCADE)
-    servicio = models.ForeignKey('Servicio', models.DO_NOTHING, on_delete=models.CASCADE)
-    usuario_creacion = models.ForeignKey('Usuario', models.DO_NOTHING, on_delete=models.CASCADE)
+    servicio = models.ForeignKey(
+        'Servicio', on_delete=models.CASCADE)
+    usuario_creacion = models.ForeignKey(Usuario, on_delete=models.CASCADE)
     fecha_usfecha_uso_inicioo = models.DateTimeField()
     fecha_uso_fin = models.DateTimeField(blank=True, null=True)
-    caja = models.ForeignKey('Caja', models.DO_NOTHING, on_delete=models.CASCADE)
+    caja = models.ForeignKey('Caja',
+                             on_delete=models.CASCADE)
     arqueo = models.IntegerField(blank=True, null=True)
 
     class Meta:
@@ -24,7 +96,8 @@ class AperturaCaja(models.Model):
 
 class Atencion(models.Model):
     id = models.BigAutoField(primary_key=True)
-    cliente_atendido = models.ForeignKey('Cliente', models.DO_NOTHING, db_column='cliente_atendido',on_delete=models.CASCADE)
+    cliente_atendido = models.ForeignKey(
+        'Cliente', db_column='cliente_atendido', on_delete=models.CASCADE)
     hora_inicio_atencion = models.TimeField()
     hora_fin_atencion = models.DateTimeField()
 
@@ -33,8 +106,8 @@ class Atencion(models.Model):
 
 
 class Caja(models.Model):
-    id = models.SmallIntegerField(primary_key=True)
-    nro_caja = models.SmallAutoField()
+    id = models.SmallAutoField(primary_key=True)
+    nro_caja = models.IntegerField()
     fecha_insercion = models.DateTimeField()
     activo = models.BooleanField()
     fecha_cierre = models.DateTimeField(blank=True, null=True)
@@ -45,7 +118,8 @@ class Caja(models.Model):
 
 class Cliente(models.Model):
     id = models.IntegerField(primary_key=True)
-    persona = models.ForeignKey('Persona', models.DO_NOTHING, on_delete=models.CASCADE)
+    persona = models.ForeignKey(
+        'Persona', on_delete=models.CASCADE)
     ruc = models.CharField(max_length=20, blank=True, null=True)
     razon_social = models.CharField(max_length=128)
     distrito_id = models.SmallIntegerField()
@@ -56,10 +130,14 @@ class Cliente(models.Model):
 
 class ClienteCola(models.Model):
     id = models.IntegerField(primary_key=True)
-    prioridad = models.ForeignKey('Prioridad', models.DO_NOTHING, db_column='prioridad', on_delete=models.CASCADE)
-    cola = models.ForeignKey('Cola', models.DO_NOTHING, on_delete=models.CASCADE)
-    cliente = models.ForeignKey(Cliente, models.DO_NOTHING, on_delete=models.CASCADE)
-    estado = models.ForeignKey('EstadoCliente', models.DO_NOTHING, db_column='estado', on_delete=models.CASCADE)
+    prioridad = models.ForeignKey(
+        'Prioridad', db_column='prioridad', on_delete=models.CASCADE)
+    cola = models.ForeignKey('Cola',
+                             on_delete=models.CASCADE)
+    cliente = models.ForeignKey(
+        Cliente, on_delete=models.CASCADE)
+    estado = models.ForeignKey(
+        'EstadoCliente', db_column='estado', on_delete=models.CASCADE)
     activo = models.BooleanField()
 
     class Meta:
@@ -68,7 +146,8 @@ class ClienteCola(models.Model):
 
 class Cola(models.Model):
     id = models.SmallIntegerField(primary_key=True)
-    servicio = models.ForeignKey('Servicio', models.DO_NOTHING, on_delete=models.CASCADE)
+    servicio = models.ForeignKey(
+        'Servicio', on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'cola'
@@ -76,14 +155,16 @@ class Cola(models.Model):
 
 class Departamento(models.Model):
     id = models.SmallAutoField(primary_key=True)
-    pais_is = models.ForeignKey('Pais', models.DO_NOTHING, db_column='pais_is', on_delete=models.CASCADE)
+    pais_is = models.ForeignKey(
+        'Pais', db_column='pais_is', on_delete=models.CASCADE)
     codigo = models.SmallIntegerField(unique=True)
     descripcion = models.CharField(max_length=16)
     activo = models.BooleanField()
     fecha_insercion = models.DateTimeField()
     usuario_insercion = models.CharField(max_length=16)
     fecha_modificacion = models.DateTimeField(blank=True, null=True)
-    usuario_modificacion = models.CharField(max_length=16, blank=True, null=True)
+    usuario_modificacion = models.CharField(
+        max_length=16, blank=True, null=True)
 
     class Meta:
         db_table = 'departamento'
@@ -91,29 +172,17 @@ class Departamento(models.Model):
 
 class Derivacion(models.Model):
     id = models.IntegerField(primary_key=True)
-    cliente_cola = models.ForeignKey(ClienteCola, models.DO_NOTHING, on_delete=models.CASCADE)
-    cola_inicio = models.ForeignKey(Cola, models.DO_NOTHING, db_column='cola_inicio', on_delete=models.CASCADE)
-    cola_destino = models.ForeignKey(Cola, models.DO_NOTHING, db_column='cola_destino', on_delete=models.CASCADE)
+    cliente_cola = models.ForeignKey(
+        ClienteCola, on_delete=models.CASCADE)
+    cola_inicio = models.ForeignKey(
+        Cola, db_column='cola_inicio', on_delete=models.CASCADE, related_name='cola_inicio')
+    cola_destino = models.ForeignKey(
+        Cola, db_column='cola_destino', on_delete=models.CASCADE, related_name='cola_destino')
     motivo = models.CharField(max_length=30)
     generado_por = models.CharField(max_length=15)
 
     class Meta:
         db_table = 'derivacion'
-
-
-class Distrito(models.Model):
-    id = models.SmallAutoField(primary_key=True)
-    departamento = models.ForeignKey(Departamento, models.DO_NOTHING, on_delete=models.CASCADE)
-    codigo = models.SmallIntegerField(unique=True)
-    descripcion = models.CharField(max_length=32)
-    activo = models.BooleanField()
-    fecha_insercion = models.DateTimeField()
-    usuario_insercion = models.CharField(max_length=16)
-    fecha_modificacion = models.DateTimeField(blank=True, null=True)
-    usuario_modificacion = models.CharField(max_length=16, blank=True, null=True)
-
-    class Meta:
-        db_table = 'distrito'
 
 
 class EstadoCliente(models.Model):
@@ -127,7 +196,7 @@ class EstadoCliente(models.Model):
 
 class Nacionalidad(models.Model):
     id = models.SmallAutoField(primary_key=True)
-    pais = models.ForeignKey('Pais', models.DO_NOTHING, on_delete=models.CASCADE)
+    pais = models.ForeignKey('Pais', on_delete=models.CASCADE)
     codigo = models.SmallIntegerField(unique=True)
     descripcion = models.CharField(max_length=24)
     activo = models.BooleanField()
@@ -149,7 +218,8 @@ class Pais(models.Model):
     fecha_insercion = models.DateTimeField()
     usuario_insercion = models.CharField(max_length=16)
     fecha_modificacion = models.DateTimeField(blank=True, null=True)
-    usuario_modificacion = models.CharField(max_length=16, blank=True, null=True)
+    usuario_modificacion = models.CharField(
+        max_length=16, blank=True, null=True)
 
     class Meta:
         db_table = 'pais'
@@ -166,30 +236,6 @@ class Permiso(models.Model):
         db_table = 'permiso'
 
 
-class Persona(models.Model):
-    id = models.SmallAutoField(primary_key=True)
-    tipo_persona = models.ForeignKey('TipoPersona', models.DO_NOTHING, on_delete=models.CASCADE)
-    tipo_documento = models.ForeignKey('TipoDocumento', models.DO_NOTHING, on_delete=models.CASCADE)
-    numero_documento = models.CharField(unique=True, max_length=16)
-    nombre = models.CharField(max_length=64)
-    apellido = models.CharField(max_length=64)
-    fecha_nacimiento = models.DateField()
-    lugar_nacimiento_distrito = models.ForeignKey(Distrito, models.DO_NOTHING, on_delete=models.CASCADE)
-    sexo = models.ForeignKey('Sexo', models.DO_NOTHING, on_delete=models.CASCADE)
-    nacionalidad = models.ForeignKey(Nacionalidad, models.DO_NOTHING, on_delete=models.CASCADE)
-    direccion = models.CharField(max_length=70, blank=True, null=True)
-    telefono = models.CharField(max_length=20, blank=True, null=True)
-    email = models.CharField(max_length=50, blank=True, null=True)
-    activo = models.BooleanField()
-    fecha_insercion = models.DateTimeField()
-    usuario_insercion = models.CharField(max_length=16)
-    fecha_modificacion = models.DateTimeField(blank=True, null=True)
-    usuario_modificacion = models.CharField(max_length=16, blank=True, null=True)
-
-    class Meta:
-        db_table = 'persona'
-
-
 class Prioridad(models.Model):
     id = models.SmallAutoField(primary_key=True)
     codigo = models.SmallIntegerField()
@@ -200,20 +246,11 @@ class Prioridad(models.Model):
         db_table = 'prioridad'
 
 
-class Rol(models.Model):
-    id = models.SmallAutoField(primary_key=True)
-    codigo = models.CharField(max_length=8)
-    descripcion = models.CharField(max_length=32)
-    activo = models.BooleanField()
-
-    class Meta:
-        db_table = 'rol'
-
-
 class RolPermiso(models.Model):
     id = models.SmallIntegerField(primary_key=True)
-    permiso = models.ForeignKey(Permiso, models.DO_NOTHING, on_delete=models.CASCADE)
-    rol = models.ForeignKey(Rol, models.DO_NOTHING, on_delete=models.CASCADE)
+    permiso = models.ForeignKey(
+        Permiso, on_delete=models.CASCADE)
+    rol = models.ForeignKey(Rol, on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'rol_permiso'
@@ -237,7 +274,8 @@ class Sexo(models.Model):
     fecha_insercion = models.DateTimeField()
     usuario_insercion = models.CharField(max_length=16)
     fecha_modificacion = models.DateTimeField(blank=True, null=True)
-    usuario_modificacion = models.CharField(max_length=16, blank=True, null=True)
+    usuario_modificacion = models.CharField(
+        max_length=16, blank=True, null=True)
 
     class Meta:
         db_table = 'sexo'
@@ -251,7 +289,8 @@ class TipoDocumento(models.Model):
     fecha_insercion = models.DateTimeField()
     usuario_insercion = models.CharField(max_length=16)
     fecha_modificacion = models.DateTimeField(blank=True, null=True)
-    usuario_modificacion = models.CharField(max_length=16, blank=True, null=True)
+    usuario_modificacion = models.CharField(
+        max_length=16, blank=True, null=True)
 
     class Meta:
         db_table = 'tipo_documento'
@@ -265,21 +304,8 @@ class TipoPersona(models.Model):
     fecha_insercion = models.DateTimeField()
     usuario_insercion = models.CharField(max_length=16)
     fecha_modificacion = models.DateTimeField(blank=True, null=True)
-    usuario_modificacion = models.CharField(max_length=16, blank=True, null=True)
+    usuario_modificacion = models.CharField(
+        max_length=16, blank=True, null=True)
 
     class Meta:
         db_table = 'tipo_persona'
-
-
-class Usuario(models.Model):
-    id = models.OneToOneField(Persona, models.DO_NOTHING, on_delete=models.CASCADE, db_column='id', primary_key=True)
-    nombre = models.CharField(unique=True, max_length=16)
-    clave = models.CharField(max_length=32)
-    activo = models.BooleanField()
-    persona_id = models.IntegerField()
-    rol = models.ForeignKey(Rol, models.DO_NOTHING, on_delete=models.CASCADE)
-    fecha_insercion = models.DateTimeField()
-    fecha_modificacion = models.DateTimeField(blank=True, null=True)
-
-    class Meta:
-        db_table = 'usuario'
