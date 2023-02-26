@@ -5,7 +5,12 @@
 #   * Make sure each ForeignKey and OneToOneField has `on_delete` set to the desired behavior
 #   * Remov` lines if you wish to allow Django to create, modify, and delete the table
 # Feel free to rename the models, but don't rename db_table values or field names.
+import datetime
+
+from django.contrib.auth.base_user import AbstractBaseUser
+from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.utils.timezone import now
 
 
 class Distrito(models.Model):
@@ -27,28 +32,20 @@ class Distrito(models.Model):
 
 class Persona(models.Model):
     id = models.SmallAutoField(primary_key=True)
-    tipo_persona = models.ForeignKey(
-        'TipoPersona', on_delete=models.CASCADE)
-    tipo_documento = models.ForeignKey(
-        'TipoDocumento', on_delete=models.CASCADE)
     numero_documento = models.CharField(unique=True, max_length=16)
     nombre = models.CharField(max_length=64)
     apellido = models.CharField(max_length=64)
     fecha_nacimiento = models.DateField()
-    lugar_nacimiento_distrito = models.ForeignKey(
-        Distrito, on_delete=models.CASCADE)
-    sexo = models.ForeignKey('Sexo', on_delete=models.CASCADE)
-    nacionalidad = models.ForeignKey(
-        'Nacionalidad', on_delete=models.CASCADE)
+    sexo = models.CharField(max_length=20, choices=[(
+        'M', 'Masculino'), ('F', 'Femenino'), ('NB', 'No Binario')], null=True, blank=True)
     direccion = models.CharField(max_length=70, blank=True, null=True)
     telefono = models.CharField(max_length=20, blank=True, null=True)
-    email = models.CharField(max_length=50, blank=True, null=True)
-    activo = models.BooleanField()
-    fecha_insercion = models.DateTimeField()
-    usuario_insercion = models.CharField(max_length=16)
-    fecha_modificacion = models.DateTimeField(blank=True, null=True)
-    usuario_modificacion = models.CharField(
-        max_length=16, blank=True, null=True)
+    email = models.EmailField(max_length=50, blank=True, null=True)
+    activo = models.BooleanField(default=True)
+    fecha_insercion = models.DateTimeField(default=datetime.datetime.now)
+
+    def __str__(self) -> str:
+        return self.numero_documento
 
     class Meta:
         db_table = 'persona'
@@ -96,10 +93,19 @@ class AperturaCaja(models.Model):
 
 class Atencion(models.Model):
     id = models.BigAutoField(primary_key=True)
-    cliente_atendido = models.ForeignKey(
-        'Cliente', db_column='cliente_atendido', on_delete=models.CASCADE)
-    hora_inicio_atencion = models.TimeField()
-    hora_fin_atencion = models.DateTimeField()
+    ci = models.CharField(unique=True, max_length=16)
+    PRIORIDADES = (
+        (3, '3ra Edad, Embarazadas, Discapacidad'),
+        (2, 'Clientes corporativos'),
+        (1, 'Clientes personales'),
+    )
+    prioridad = models.IntegerField(choices=PRIORIDADES, null=True)
+    horario_atencion = models.TimeField(default=now)
+    espcialidad = models.ForeignKey(
+        'Servicio', on_delete=models.CASCADE, null=True)
+
+    def __str__(self):
+        return self.ci
 
     class Meta:
         db_table = 'atencion'
@@ -258,9 +264,11 @@ class RolPermiso(models.Model):
 
 class Servicio(models.Model):
     id = models.SmallAutoField(primary_key=True)
-    codigo = models.SmallIntegerField(unique=True)
-    descripcion = models.CharField(max_length=15)
-    activo = models.BooleanField()
+    nombre = models.CharField(max_length=50, null=True)
+    descripcion = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return self.nombre
 
     class Meta:
         db_table = 'servicio'

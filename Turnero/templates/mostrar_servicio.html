@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Servicios</h1>
+    <div class="d-inline-flex p-2" style="gap: 1rem;">
+        {% for servicio in object_list %}
+            <div class="card" style="width: 18rem;">
+                <div class="card-body">
+                    <h5 class="card-title">{{ servicio.nombre }}</h5>
+                    <p class="card-text">{{ servicio.descripcion }}</p>
+                    <a href="{% url 'listarTurnosServicio' servicio.id %}" class="btn btn-primary">Revisar Turnos</a>
+                </div>
+            </div>
+        {% empty %}
+            <li>No articles yet.</li>
+        {% endfor %}
+    </div>
+{% endblock %}
