@@ -14,7 +14,7 @@ from django.contrib.auth import authenticate, login, logout
 def persona_ci(ci):
     try:
         persona = Persona.objects.filter(numero_documento=ci).first()
-        return persona.nombre
+        return persona.nombre + ' ' + persona.apellido
     except:
         return 'Visitante'
 
@@ -97,7 +97,7 @@ def mostrarTurnoServicio(request, servicio_id):
     # mostrar todos los objetos de atencion de esa especialidad
     turnos = Atencion.objects.filter(espcialidad=servicio_id)
     # ordenar por prioridad y por horario de atencion
-    turnos = turnos.order_by('-prioridad', '-horario_atencion')
+    turnos = turnos.order_by('-prioridad', 'horario_atencion')
     servicio = Servicio.objects.get(id=servicio_id).nombre
     context = {
         'turnos': turnos,
@@ -111,3 +111,19 @@ def eliminarTurno(request, pk):
     servicio_id = turno.espcialidad.id
     turno.delete()
     return redirect('listarTurnosServicio', servicio_id)
+
+
+def derivarServicio(request, pk):
+    if request.method == "POST":
+        form = DerivarServicio(request.POST)
+        if form.is_valid():
+            servicio = Atencion.objects.get(id=pk)
+            ci = servicio.ci
+            espcialidad = form.cleaned_data['espcialidad']
+            servicio.espcialidad = espcialidad
+            servicio.save()
+            servicio_id = Servicio.objects.filter(nombre=espcialidad).first().id
+            return redirect('listarTurnosServicio', servicio_id)
+    else:
+        form = DerivarServicio()
+        return render(request, 'derivarServicio.html', {'form': form})

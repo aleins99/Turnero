@@ -6,7 +6,8 @@
         <div class="card" style="margin-bottom: 10px;">
             <div class="card-body">
                 <h5 class="card-title">{{ turno.ci  }} - {{turno.ci|persona_ci }} </h5>
-                <a href="{% url 'eliminarTurnoServicio' turno.pk %}" class="btn btn-primary">Llamar a Persona</a>
+                <a href="{% url 'eliminarTurnoServicio' turno.pk %}" class="btn btn-primary">Finalizar Turno</a>
+                <a href="{% url 'derivarServicio' turno.pk %}" class="btn btn-secondary">Derivar Servicio</a>
             </div>
         </div>
     {% endfor %}

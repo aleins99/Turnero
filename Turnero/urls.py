@@ -5,7 +5,6 @@ from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
 from . import views
 urlpatterns = [
-    path('admin/', admin.site.urls),
     path('register/', views.register, name='register'),
     path('login/', views.iniciar_sesion, name='login'),
     path('logout/', views.cerrar_sesion, name='cerrar_sesion'),
@@ -17,6 +16,7 @@ urlpatterns = [
          views.mostrarTurnoServicio, name='listarTurnosServicio'),
     path('servicios/turnos/<pk>/eliminar',
          views.eliminarTurno, name='eliminarTurnoServicio'),
+    path('servicios/turnos/<pk>/derivar/', views.derivarServicio, name='derivarServicio'),
 ]
 
 if settings.DEBUG:

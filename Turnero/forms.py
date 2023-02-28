@@ -75,3 +75,18 @@ class RegistrarPersonaForm(forms.ModelForm):
                 field.widget.attrs.update({'class': 'form-control'})
             else:
                 field.widget.attrs.update({'class': 'form-control'})
+
+
+class DerivarServicio(forms.ModelForm):
+    class Meta:
+        model = Atencion
+        fields = ["espcialidad"]
+
+    def __init__(self, *args, **kwargs):
+        """
+        The function takes in a list of fields and a list of widgets, and re>
+        the widgets replaced
+        """
+        super(DerivarServicio, self).__init__(*args, **kwargs)
+        for name, field in self.fields.items():
+            field.widget.attrs.update({'class': 'form-control'})
